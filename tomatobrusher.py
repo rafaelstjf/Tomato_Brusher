@@ -16,35 +16,35 @@ def get_movies_urls():
     browser.get(browse_movies_url)
 
     #search through the movies list, adding each movie and it's url into the dictionary
-    while(in_loop == True):
-        elements = []
-        try:
-            elements = browser.find_elements_by_class_name('mb-movie')
-        except NoSuchElementException:
-            print("Movies not found!")
-            break
-        for e in elements:
-            attrib = e.get_attribute('outerHTML')
-            name = re.findall(name_pattern, str(attrib))
-            url = re.findall(url_pattern, str(attrib))
-            if (len(name) > 0) and (len(url) > 0):
-                for i in range (0, len(name)):
-                    name[i] = re.sub('<h3 class=\"movieTitle\">', '',name[i])
-                    name[i] = re.sub('</h3>', '',name[i])
-                    url[i] = re.sub('href=\"','', url[i])
-                    url[i] = re.sub('\"','', url[i])
-                    movies[name[i]] = url[i]
+    while(in_loop == True):            
         try:
             button = browser.find_element_by_css_selector('.btn.btn-secondary-rt.mb-load-btn')
             button.click()
         except NoSuchElementException:
+            browser.execute_script("window.scrollTo(0,document.body.scrollHeight)")
             in_loop = False
             break
+    elements = []
+    try:
+        elements = browser.find_elements_by_class_name('mb-movie')
+    except NoSuchElementException:
+        print("Movies not found!")
+    for e in elements:
+        attrib = e.get_attribute('outerHTML')
+        name = re.findall(name_pattern, str(attrib))
+        url = re.findall(url_pattern, str(attrib))
+        if (len(name) > 0) and (len(url) > 0):
+            for i in range (0, len(name)):
+                name[i] = re.sub('<h3 class=\"movieTitle\">', '',name[i])
+                name[i] = re.sub('</h3>', '',name[i])
+                url[i] = re.sub('href=\"','', url[i])
+                url[i] = re.sub('\"','', url[i])
+                movies[name[i]] = url[i]
     browser.close()
     return movies
 
 def get_movie_info(movie_url):
-    url = "https://www.rottentomatoes.com/" + movie_url
+    url = "https://www.rottentomatoes.com" + movie_url
     name_xpath = '//*[@id="topSection"]/div[2]/div[1]/h1'
     tomatometer_xpath = '//*[@id="tomato_meter_link"]/span[2]'
     user_score_xpath = '//*[@id="topSection"]/div[2]/div[1]/section/section/div[2]/h2/a/span[2]'
