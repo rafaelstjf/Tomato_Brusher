@@ -51,99 +51,121 @@ def get_movies_urls(save_file = False):
 
 def get_movie_info(movie_url):
         url = "https://www.rottentomatoes.com/" + movie_url
-        browser = webdriver.Firefox()
-        browser.get(url)
+        name_xpath = '//*[@id="topSection"]/div[2]/div[1]/h1'
+        tomatometer_xpath = '//*[@id="tomato_meter_link"]/span[2]'
+        user_score_xpath = '//*[@id="topSection"]/div[2]/div[1]/section/section/div[2]/h2/a/span[2]'
+        rating_xpath = '//*[@id="mainColumn"]/section[3]/div/div/ul/li[1]/div[2]'
+        genre_xpath = '//*[@id="mainColumn"]/section[3]/div/div/ul/li[2]/div[2]'
+        directors_xpath = '//*[@id="mainColumn"]/section[3]/div/div/ul/li[3]/div[2]'
+        writters_xpath ='//*[@id="mainColumn"]/section[3]/div/div/ul/li[4]/div[2]'
+        synopsis_xpath = '//*[@id="movieSynopsis"]'
+        cast_xpath = '//*[@id="movie-cast"]/div/div'
         names = []
+        directors = []
         ratings = []
-        info = []
-        synopsis = []
+        genres = []
+        tomatometers = []
+        user_scores = []
+        writters = []
+        synop = []
         cast = []
+        firefox_profile = webdriver.FirefoxProfile()
+        firefox_profile.set_preference('permissions.default.image', 2)
+        browser = webdriver.Firefox(firefox_profile) #do not load the images
+        browser.get(url)
         #movie's name
         try:
-            names = browser.find_elements_by_css_selector('.mop-ratings-wrap__title.mop-ratings-wrap__title--top')
+            names.append(browser.find_element_by_xpath(name_xpath))
         except NoSuchElementException:
             print("Name of the movie not found")
-        clean_name = ''
+        name = ''
         if(len(names) > 0):
-            clean_name = str(names[0].get_attribute('outerHTML')).replace('<h1 class=\"mop-ratings-wrap__title mop-ratings-wrap__title--top\">','')
-            clean_name = clean_name.replace('</h1>','')
+            name = str(names[0].get_attribute('innerHTML'))
         #scores
         try:
-            ratings = browser.find_elements_by_class_name('mop-ratings-wrap__percentage')
+            tomatometers.append(browser.find_element_by_xpath(tomatometer_xpath))
         except NoSuchElementException:
-            print("Ratings of the movie not found")
+            print("Tomatometer of the movie not found")
         tomatometer = ''
+        if(len(tomatometers) > 0):
+            tomatometer = str(tomatometers[0].get_attribute('innerHTML'))
+        try:
+            user_scores.append(browser.find_element_by_xpath(user_score_xpath))
+        except NoSuchElementException:
+            print("User score of the movie not found")
         user_score = ''
-        if(len(ratings) > 1):
-            tomatometer = re.sub('<.*?\">\s*', '', str(ratings[0].get_attribute('outerHTML')))
-            tomatometer = re.sub('\s*?</span>', '', tomatometer)
-            user_score = re.sub('<.*?\">\s*', '', str(ratings[1].get_attribute('outerHTML')))
-            user_score = re.sub('\s*?</span>', '', user_score)
+        if(len(user_scores) > 0):
+            user_score = str(user_scores[0].get_attribute('innerHTML'))
         #movie's info
         try:
-            info = browser.find_elements_by_css_selector('.content-meta.info')
+            ratings.append(browser.find_element_by_xpath(rating_xpath))
         except NoSuchElementException:
-            print("Info of the movie not found")
+            print('Rating of the movie not found')
         rating = ''
-        genre = []
-        directors = []
-        writters = []
-        if(len(info) > 0):
-            r = info[0].get_attribute('outerHTML')
-            rating = re.findall(r'Rating:</div>\s*<div class=\"meta-value\">\w*', str(r))[0]
-            rating = re.sub(r'Rating:</div>\s*<div class=\"meta-value\">','', rating)
-            gen= re.findall(r'Genre:</div>\s*<div class=\"meta-value\">[\s\w\,\-\_]*', str(r))[0]
-            gen = re.sub(r'Genre:</div>\s*<div class=\"meta-value\">','', gen)
-            re.sub(r'\s*', '', gen)
-            genre = gen.split(',')
-            dr= re.findall(r'Directed By:[\w\s]*</li>', str(r))
-            dr_href = re.findall(r'>[\w\s]*</a>', str(dr))
-            for i in range(len(dr_href)):
-                temp = dr_href[i].replace('>', '')
-                temp = temp.replace('</a>', '')
-                directors.append(str(temp))
-            wr= re.findall(r'Written By:[.|\s]*</li>', str(r))
-            wr_href = re.findall(r'>[\w\s]*</a>', str(wr))
-            for i in range(len(wr_href)):
-                temp = wr_href[i].replace('>', '')
-                temp = temp.replace('</a>', '')
-                writters.append(str(temp))
+        if(len(ratings) > 0):
+            rating = str(ratings[0].get_attribute('innerHTML'))
+        try:
+            genres.append(browser.find_element_by_xpath(genre_xpath))
+        except NoSuchElementException:
+            print("Genre of the movie not found")
+        genre = ''
+        if(len(genres) > 0):
+            genre = str(genres[0].get_attribute('innerHTML'))
+        try:
+            directors.append(browser.find_element_by_xpath(directors_xpath))
+        except NoSuchElementException:
+            print('Directors of the movie not found')
+        director = ''
+        if(len(directors) > 0):
+            director = str(directors[0].get_attribute('innerHTML'))
+            director = re.sub(r'\s*<a href=\".*\">', '', director)
+            director = re.sub(r'</a>', '', director)
+        try:
+            writters.append(browser.find_element_by_xpath(writters_xpath))
+        except NoSuchElementException:
+            print('Writters of the movie not found')
+        writter = ''
+        if(len(writters) > 0):
+            writter = str(writters[0].get_attribute('innerHTML'))
+            writter = re.sub(r'\s*<a href=\".*\">', '', writter)
+            writter = re.sub(r'</a>', '', writter)
         #synopsis
         try:
-            synopsis = browser.find_element_by_id('movieSynopsis')
+            synop.append(browser.find_element_by_xpath(synopsis_xpath))
         except NoSuchElementException:
             print("Synopsis of the movie not found")
-        synop = ''
-        synop = re.findall('>\s*.*\s*<', str(synopsis.get_attribute('outerHTML')))[0]
-        synop = synop.replace('>', '')
-        synop = synop.replace('<', '')
+        synopsis = ''
+        if(len(synop) > 0):
+            synopsis = str(synop[0].get_attribute('innerHTML'))
         #cast
+        cast_temp = []
         try:
-            cast = browser.find_element_by_class_name('castSection')
+            cast_temp.append(browser.find_element_by_xpath(cast_xpath))
         except NoSuchElementException:
             print("Cast of the movie not found")
-        cast_actors = []
-        if(cast != None):
-            actors = re.findall(r'<span title=\".*?\">\s*.*', str(cast.get_attribute('outerHTML')))
-            for ac in actors:
-                temp = re.sub(r'<span title=\".*?\">\s*','',str(ac))
-                cast_actors.append(str(temp))
-        browser.close()
+        cast_block = ''
+        if(len(cast_temp) > 0):
+            cast_block = str(cast_temp[0].get_attribute('innerHTML'))
+            cast_actors_reg = []
+            cast_actors_reg = re.findall('<span title=\"[\w\s]*\">[\w\s]*</span>', cast_block)
+            for ac in cast_actors_reg:
+                temp = re.sub(r'<span title=\"[\w\s]*\">\s*', '', ac)
+                temp = re.sub(r'</span>', '', temp)
+                cast.append(temp)
+        
         print('-------------------------')
-        print('Name: ' + clean_name + '\tTomatometer: ' + tomatometer + '\tUser Score: ' + user_score)
+        print('Name: ' + name + '\tTomatometer: ' + tomatometer + '\tUser Score: ' + user_score)
         print('Rating: '+ rating)
         print('Genre: ')
-        for i in genre:
-            print('\t' + i)
-        print('Synopsis: ' + synop)
+        print('\t' + genre)
+        print('Synopsis: ' + synopsis)
         print('Directed by:')
-        for i in directors:
-            print('\t' + i)
+        print('\t' + director)
         print('Written by:')
-        for i in writters:
-            print('\t' + i)
+        print('\t' + writter)
         print('Cast:')
-        for i in cast_actors:
+        for i in cast:
             print('\t' + i)
+        browser.close()
 #get_movies_urls()
 get_movie_info('m/palm_springs_2020')
