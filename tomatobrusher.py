@@ -1,8 +1,19 @@
-from bs4 import BeautifulSoup
 from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
 from selenium.common.exceptions import NoSuchElementException
 import re
 import json
+
+name_xpath = '//*[@id="topSection"]/div[2]/div[1]/h1'
+tomatometer_xpath = '//*[@id="tomato_meter_link"]/span[2]'
+user_score_xpath = '//*[@id="topSection"]/div[2]/div[1]/section/section/div[2]/h2/a/span[2]'
+
+rating_xpath = ['//*[@id="mainColumn"]/section[3]/div/div/ul/li[1]/div[2]', '//*[@id="mainColumn"]/section[2]/div/div/ul/li[1]/div[2]']
+genre_xpath = ['//*[@id="mainColumn"]/section[3]/div/div/ul/li[2]/div[2]', '//*[@id="mainColumn"]/section[2]/div/div/ul/li[2]/div[2]']
+directors_xpath = ['//*[@id="mainColumn"]/section[3]/div/div/ul/li[3]/div[2]','//*[@id="mainColumn"]/section[2]/div/div/ul/li[2]/div[2]']
+writters_xpath =['//*[@id="mainColumn"]/section[3]/div/div/ul/li[4]/div[2]', '//*[@id="mainColumn"]/section[2]/div/div/ul/li[4]/div[2]']
+synopsis_xpath = '//*[@id="movieSynopsis"]'
+cast_xpath = '//*[@id="movie-cast"]/div/div'
 firefox_profile = webdriver.FirefoxProfile()
 firefox_profile.set_preference('permissions.default.image', 2)
 def get_movies_urls():
@@ -46,15 +57,6 @@ def get_movies_urls():
 
 def get_movie_info(movie_url):
     url = "https://www.rottentomatoes.com" + movie_url
-    name_xpath = '//*[@id="topSection"]/div[2]/div[1]/h1'
-    tomatometer_xpath = '//*[@id="tomato_meter_link"]/span[2]'
-    user_score_xpath = '//*[@id="topSection"]/div[2]/div[1]/section/section/div[2]/h2/a/span[2]'
-    rating_xpath = '//*[@id="mainColumn"]/section[3]/div/div/ul/li[1]/div[2]'
-    genre_xpath = '//*[@id="mainColumn"]/section[3]/div/div/ul/li[2]/div[2]'
-    directors_xpath = '//*[@id="mainColumn"]/section[3]/div/div/ul/li[3]/div[2]'
-    writters_xpath ='//*[@id="mainColumn"]/section[3]/div/div/ul/li[4]/div[2]'
-    synopsis_xpath = '//*[@id="movieSynopsis"]'
-    cast_xpath = '//*[@id="movie-cast"]/div/div'
     names = []
     directors = []
     ratings = []
@@ -91,32 +93,44 @@ def get_movie_info(movie_url):
         user_score = str(user_scores[0].get_attribute('innerHTML'))
     #movie's info
     try:
-        ratings.append(browser.find_element_by_xpath(rating_xpath))
+        ratings.append(browser.find_element_by_xpath(rating_xpath[0]))
     except NoSuchElementException:
-        print('Rating of the movie not found')
+        try:
+            ratings.append(browser.find_element_by_xpath(rating_xpath[1]))
+        except NoSuchElementException:
+            print('Rating of the movie not found')
     rating = ''
     if(len(ratings) > 0):
         rating = str(ratings[0].get_attribute('innerHTML'))
     try:
-        genres.append(browser.find_element_by_xpath(genre_xpath))
+        genres.append(browser.find_element_by_xpath(genre_xpath[0]))
     except NoSuchElementException:
-        print("Genre of the movie not found")
+        try:
+            genres.append(browser.find_element_by_xpath(genre_xpath[1]))
+        except NoSuchElementException:
+            print("Genre of the movie not found")
     genre = ''
     if(len(genres) > 0):
         genre = str(genres[0].get_attribute('innerHTML'))
     try:
-        directors.append(browser.find_element_by_xpath(directors_xpath))
+        directors.append(browser.find_element_by_xpath(directors_xpath[0]))
     except NoSuchElementException:
-        print('Directors of the movie not found')
+        try:
+            directors.append(browser.find_element_by_xpath(directors_xpath[1]))
+        except NoSuchElementException:
+            print('Directors of the movie not found')
     director = ''
     if(len(directors) > 0):
         director = str(directors[0].get_attribute('innerHTML'))
         director = re.sub(r'\s*<a href=\".*\">', '', director)
         director = re.sub(r'</a>', '', director)
     try:
-        writters.append(browser.find_element_by_xpath(writters_xpath))
+        writters.append(browser.find_element_by_xpath(writters_xpath[0]))
     except NoSuchElementException:
-        print('Writters of the movie not found')
+        try:
+            writters.append(browser.find_element_by_xpath(writters_xpath[1]))
+        except NoSuchElementException:
+            print('Writters of the movie not found')
     writter = ''
     if(len(writters) > 0):
         writter = str(writters[0].get_attribute('innerHTML'))
