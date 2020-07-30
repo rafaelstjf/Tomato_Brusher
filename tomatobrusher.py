@@ -2,6 +2,7 @@ from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
 import re
+import json
 firefox_profile = webdriver.FirefoxProfile()
 firefox_profile.set_preference('permissions.default.image', 2)
 def get_movies_urls():
@@ -173,5 +174,25 @@ def get_movie_info(movie_url):
                 "Cast": cast
                 }
     return movie_json
+
+def get_movie_info_from_file(input_file, output_file = None):
+    l = 0
+    try:
+        input_file = open(input_file, 'r')
+    except IOError:
+        print("Error when opening the file!")
+        return
+    json_file = []
+    for line in input_file:
+        l+=1
+        print(l)
+        json_file.append(get_movie_info(line))
+    if(output_file != None):
+        try:
+            out_file = open(output_file, 'w+', encoding='utf-8')
+        except IOError:
+            print('Error when saving the file')
+            return
+        json.dump(json_file, out_file, indent=4)
 
 
