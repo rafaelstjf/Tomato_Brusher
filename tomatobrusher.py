@@ -10,12 +10,15 @@ user_score_xpath = '//*[@id="topSection"]/div[2]/div[1]/section/section/div[2]/h
 
 rating_xpath = ['//*[@id="mainColumn"]/section[3]/div/div/ul/li[1]/div[2]', '//*[@id="mainColumn"]/section[2]/div/div/ul/li[1]/div[2]']
 genre_xpath = ['//*[@id="mainColumn"]/section[3]/div/div/ul/li[2]/div[2]', '//*[@id="mainColumn"]/section[2]/div/div/ul/li[2]/div[2]']
-directors_xpath = ['//*[@id="mainColumn"]/section[3]/div/div/ul/li[3]/div[2]','//*[@id="mainColumn"]/section[2]/div/div/ul/li[2]/div[2]']
+directors_xpath = ['//*[@id="mainColumn"]/section[3]/div/div/ul/li[3]/div[2]','//*[@id="mainColumn"]/section[2]/div/div/ul/li[3]/div[2]']
 writters_xpath =['//*[@id="mainColumn"]/section[3]/div/div/ul/li[4]/div[2]', '//*[@id="mainColumn"]/section[2]/div/div/ul/li[4]/div[2]']
 synopsis_xpath = '//*[@id="movieSynopsis"]'
 cast_xpath = '//*[@id="movie-cast"]/div/div'
-firefox_profile = webdriver.FirefoxProfile()
-firefox_profile.set_preference('permissions.default.image', 2)
+
+chrome_options = Options()
+chrome_options.add_argument('--headless')
+chrome_options.add_argument('--no-sandbox')
+chrome_options.add_argument('--disable-dev-shm-usage')
 def get_movies_urls():
     in_loop = True
     browse_movies_url = 'https://www.rottentomatoes.com/browse/dvd-streaming-all/'
@@ -24,7 +27,7 @@ def get_movies_urls():
     url_pattern = re.compile(r'href\s*=\"/m/\w*?\"')
     name_pattern = re.compile('<h3 class=\"movieTitle\">.*?</h3>')
     #open the browser
-    browser = webdriver.Firefox(firefox_profile)
+    browser = webdriver.Chrome(chrome_options=chrome_options, executable_path="./chromedriver")
     browser.get(browse_movies_url)
 
     #search through the movies list, adding each movie and it's url into the dictionary
@@ -33,7 +36,6 @@ def get_movies_urls():
             button = browser.find_element_by_css_selector('.btn.btn-secondary-rt.mb-load-btn')
             button.click()
         except NoSuchElementException:
-            browser.execute_script("window.scrollTo(0,document.body.scrollHeight)")
             in_loop = False
             break
     elements = []
@@ -66,7 +68,7 @@ def get_movie_info(movie_url):
     writters = []
     synop = []
     cast = []
-    browser = webdriver.Firefox(firefox_profile) #do not load the images
+    browser = webdriver.Chrome(chrome_options=chrome_options, executable_path="./chromedriver")
     browser.get(url)
     #movie's name
     try:
@@ -191,16 +193,31 @@ def get_movie_info(movie_url):
 
 def get_movie_info_from_file(input_file, output_file = None):
     l = 0
+    bak_open = False
     try:
         input_file = open(input_file, 'r')
     except IOError:
         print("Error when opening the file!")
         return
+    try:
+        backup_file = open(output_file + '_backup.txt','w+', buffering=1)
+        bak_open = True
+    except IOError:
+        print("Warning! Impossible to create a backup file")
     json_file = []
     for line in input_file:
         l+=1
         print(l)
-        json_file.append(get_movie_info(line))
+        try:
+            result = get_movie_info(line)
+            json_file.append(result)
+            if bak_open == True:
+                backup_file.write(str(result) + '\n')
+        except: 
+            pass
+    input_file.close()
+    if bak_open == True:
+        backup_file.close()
     if(output_file != None):
         try:
             out_file = open(output_file, 'w+', encoding='utf-8')
@@ -208,5 +225,6 @@ def get_movie_info_from_file(input_file, output_file = None):
             print('Error when saving the file')
             return
         json.dump(json_file, out_file, indent=4)
+        out_file.close()
 
 
