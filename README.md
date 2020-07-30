@@ -15,7 +15,7 @@ Tomato Brusher is a script to get the movie info from Rotten Tomatoes' website. 
 
 ## Known issues
 
-I developed this script to do some research for a project in my master's degree course, as the webscraping isn't the main focus of the project It didn't go throught a bug hunt. Some of the bugs I noticed are:
+I developed this script to do some research for a project in my master's degree course. As the webscraping isn't the main focus of the project, it didn't go throught a bug hunt. Some of the bugs I noticed are:
 
 1 - There is a problem that the last movie in the movie list isn't added to the list of urls.
 
