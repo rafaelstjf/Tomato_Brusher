@@ -217,7 +217,7 @@ def get_movie_info_from_file(input_file, output_file = None):
         except IOError:
             print('Error when saving the file')
             return
-        json.dump(json_file, out_file, indent=4)
+        json.dump(json_file, out_file, indent=4, ensure_ascii=False)
         out_file.close()
 
 
