@@ -7,7 +7,6 @@ import json
 name_xpath = '//*[@id="topSection"]/div[2]/div[1]/h1'
 tomatometer_xpath = '//*[@id="tomato_meter_link"]/span[2]'
 user_score_xpath = '//*[@id="topSection"]/div[2]/div[1]/section/section/div[2]/h2/a/span[2]'
-
 rating_xpath = ['//*[@id="mainColumn"]/section[3]/div/div/ul/li[1]/div[2]', '//*[@id="mainColumn"]/section[2]/div/div/ul/li[1]/div[2]']
 genre_xpath = ['//*[@id="mainColumn"]/section[3]/div/div/ul/li[2]/div[2]', '//*[@id="mainColumn"]/section[2]/div/div/ul/li[2]/div[2]']
 directors_xpath = ['//*[@id="mainColumn"]/section[3]/div/div/ul/li[3]/div[2]','//*[@id="mainColumn"]/section[2]/div/div/ul/li[3]/div[2]']
@@ -17,8 +16,9 @@ cast_xpath = '//*[@id="movie-cast"]/div/div'
 
 chrome_options = Options()
 chrome_options.add_argument('--headless')
-chrome_options.add_argument('--no-sandbox')
+#chrome_options.add_argument('--no-sandbox')
 chrome_options.add_argument('--disable-dev-shm-usage')
+chrome_options.add_argument('--no-proxy-server')
 def get_movies_urls():
     in_loop = True
     browse_movies_url = 'https://www.rottentomatoes.com/browse/dvd-streaming-all/'
@@ -58,6 +58,7 @@ def get_movies_urls():
     return movies
 
 def get_movie_info(movie_url):
+    site_layout = 0
     url = "https://www.rottentomatoes.com" + movie_url
     names = []
     directors = []
@@ -95,44 +96,36 @@ def get_movie_info(movie_url):
         user_score = str(user_scores[0].get_attribute('innerHTML'))
     #movie's info
     try:
-        ratings.append(browser.find_element_by_xpath(rating_xpath[0]))
+        ratings.append(browser.find_element_by_xpath(rating_xpath[site_layout]))
     except NoSuchElementException:
+        site_layout = 1
         try:
-            ratings.append(browser.find_element_by_xpath(rating_xpath[1]))
+            ratings.append(browser.find_element_by_xpath(rating_xpath[site_layout]))
         except NoSuchElementException:
             print('Rating of the movie not found')
     rating = ''
     if(len(ratings) > 0):
         rating = str(ratings[0].get_attribute('innerHTML'))
     try:
-        genres.append(browser.find_element_by_xpath(genre_xpath[0]))
+        genres.append(browser.find_element_by_xpath(genre_xpath[site_layout]))
     except NoSuchElementException:
-        try:
-            genres.append(browser.find_element_by_xpath(genre_xpath[1]))
-        except NoSuchElementException:
-            print("Genre of the movie not found")
+        print("Genre of the movie not found")
     genre = ''
     if(len(genres) > 0):
         genre = str(genres[0].get_attribute('innerHTML'))
     try:
-        directors.append(browser.find_element_by_xpath(directors_xpath[0]))
+        directors.append(browser.find_element_by_xpath(directors_xpath[site_layout]))
     except NoSuchElementException:
-        try:
-            directors.append(browser.find_element_by_xpath(directors_xpath[1]))
-        except NoSuchElementException:
-            print('Directors of the movie not found')
+        print('Directors of the movie not found')
     director = ''
     if(len(directors) > 0):
         director = str(directors[0].get_attribute('innerHTML'))
         director = re.sub(r'\s*<a href=\".*\">', '', director)
         director = re.sub(r'</a>', '', director)
     try:
-        writters.append(browser.find_element_by_xpath(writters_xpath[0]))
+        writters.append(browser.find_element_by_xpath(writters_xpath[site_layout]))
     except NoSuchElementException:
-        try:
-            writters.append(browser.find_element_by_xpath(writters_xpath[1]))
-        except NoSuchElementException:
-            print('Writters of the movie not found')
+        print('Writters of the movie not found')
     writter = ''
     if(len(writters) > 0):
         writter = str(writters[0].get_attribute('innerHTML'))

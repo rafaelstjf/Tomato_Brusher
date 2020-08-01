@@ -126,3 +126,4 @@ dmypy.json
 .vscode/settings.json
 *.txt
 chromedriver.exe
+chromedriver

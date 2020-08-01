@@ -9,4 +9,4 @@ for i in movies_urls.keys():
     f.write(movies_urls[i] + '\n')
 '''
 
-get_movie_info_from_file('urls.txt', 'completo.json')
+print(get_movie_info('/m/days_of_the_whale'))
